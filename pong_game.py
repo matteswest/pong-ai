@@ -71,7 +71,7 @@ class Ball():
                 self.direction = Point(direction[0], direction[1])
                 update = self.direction.scalarMul(self.speed)
                 self.position = (self.position + update).round()
-                self.speed += 0.1
+                self.speed += 0.25
                 self.score += 1
                 return True
         else:
@@ -96,7 +96,17 @@ class Paddle():
 
 
 
-if __name__ == "__main__":
+def bot(ballPosition, paddlePosition) -> str:
+    if ballPosition.x < paddlePosition.x:
+        return "left"
+    elif ballPosition.x > paddlePosition.x:
+        return "right"
+    else:
+        return None
+
+
+
+def playPong(ai = True) -> int:
     screen = np.zeros((600, 900, 3), np.uint8)
     paddle = Paddle()
     ball = Ball()
@@ -104,25 +114,40 @@ if __name__ == "__main__":
     state = True
     while state:
         screen[:,:,:] = 0
-        # Update paddle position.
-        key = cv.waitKey(10)
-        if key == 27:
-            break
-        elif key == 83:
-            paddle.updatePosition(1)
-        elif key == 81:
-            paddle.updatePosition(-1)
+        # Update paddle position
+        if ai:
+            _ = cv.waitKey(10)
+            direction = bot(ball.position, paddle.position)
+            if direction == "left":
+                paddle.updatePosition(-1)
+            elif direction == "right":
+                paddle.updatePosition(1)
+        else:
+            key = cv.waitKey(10)
+            if key == 27:
+                break
+            elif key == 83:
+                paddle.updatePosition(1)
+            elif key == 81:
+                paddle.updatePosition(-1)
+
         # Update ball position.
         state = ball.updatePosition(paddle)
 
         cv.rectangle(screen, (paddle.position - paddle.size).get(), (paddle.position + paddle.size).get(), (0, 0, 255), -1)
         cv.circle(screen, ball.position.get(), ball.size.x, (255, 255, 255), cv.FILLED)
         cv.putText(screen, f"Score: {ball.score}", (800, 25), cv.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
-        cv.putText(screen, f"Speed: {ball.speed:.1f}", (800, 50), cv.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
+        cv.putText(screen, f"Speed: {ball.speed:.2f}", (800, 50), cv.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
         cv.imshow("pong", screen)
     screen[:,:,:] = 0
     cv.putText(screen, f"End score: {ball.score:.1f}", (300, 250), cv.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255))
     cv.imshow("pong", screen)
     cv.waitKey()
     cv.destroyAllWindows()
-    print(f"End score: {ball.score}")
+    
+    return ball.score
+
+
+
+if __name__ == "__main__":
+    _ = playPong()
