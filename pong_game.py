@@ -120,5 +120,9 @@ if __name__ == "__main__":
         cv.putText(screen, f"Score: {ball.score}", (800, 25), cv.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
         cv.putText(screen, f"Speed: {ball.speed:.1f}", (800, 50), cv.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
         cv.imshow("pong", screen)
+    screen[:,:,:] = 0
+    cv.putText(screen, f"End score: {ball.score:.1f}", (300, 250), cv.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255))
+    cv.imshow("pong", screen)
+    cv.waitKey()
     cv.destroyAllWindows()
     print(f"End score: {ball.score}")
