@@ -43,8 +43,8 @@ class GeneticAlgorithm():
         for i, score in enumerate(self.scores):
             choiceList += score*[i]
         newPopulation = []
-        newPopulation.extend(self.population[:round(0.25*self.populationSize)])
-        for _ in range(round(0.25*self.populationSize), self.populationSize):
+        newPopulation.extend(self.population[:round(0.1*self.populationSize)])
+        for _ in range(round(0.1*self.populationSize), self.populationSize):
             # Randomly select two models.
             nn1 = self.population[random.choice(choiceList)]
             nn2 = self.population[random.choice(choiceList)]
@@ -72,7 +72,7 @@ class GeneticAlgorithm():
     def mutate(self, kernel):
         for i in range(kernel.shape[0]):
             for j in range(kernel.shape[1]):
-                if random.uniform(0, 1) < 0.1:
+                if random.uniform(0, 1) < 0.2:
                     kernel[i, j] = random.randrange(-1, 1)
         return tf.Variable(kernel)
 
