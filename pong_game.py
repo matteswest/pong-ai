@@ -34,15 +34,20 @@ class Point():
 
 class Ball():
 
-    def __init__(self, initialPosition = Point(450, 20), speed = 2.5, size = Point(5, 5), screenSize = (900, 600)) -> None:
+    def __init__(self, initialPosition = None, speed = 2.5, size = Point(5, 5), screenSize = (900, 600)) -> None:
         self.position = initialPosition
-        self.speed = speed
+        if initialPosition is None:
+            self.position = Point(450, 20)
         self.size = size
+        if size is None:
+            self.size = Point(5, 5)
+        self.speed = speed
         self.screenSize = screenSize
-        phi = np.random.uniform(np.math.pi/4, 3*np.math.pi/4)
-        direction = np.array([np.math.cos(phi), np.math.sin(phi)])
-        direction /= np.linalg.norm(direction)
-        self.direction = Point(direction[0], direction[1])
+        # phi = np.random.uniform(np.math.pi/4, 3*np.math.pi/4)
+        # direction = np.array([np.math.cos(phi), np.math.sin(phi)])
+        # direction /= np.linalg.norm(direction)
+        # self.direction = Point(direction[0], direction[1])
+        self.direction = Point(0, 1)
         self.score = 0
 
     def updatePosition(self, paddle) -> bool:
@@ -81,9 +86,13 @@ class Ball():
 
 class Paddle():
 
-    def __init__(self, initialPosition = Point(450, 590), size = Point(50, 10), speed = 12, screenSize = (900, 600)) -> None:
+    def __init__(self, initialPosition = None, size = None, speed = 12, screenSize = (900, 600)) -> None:
         self.position = initialPosition
+        if initialPosition is None:
+            self.position = Point(450, 590)
         self.size = size
+        if size is None:
+            self.size = Point(50, 10)
         self.speed = speed
         self.screenSize = screenSize
 
@@ -96,17 +105,17 @@ class Paddle():
 
 
 
-def bot(ballPosition, paddlePosition) -> str:
-    if ballPosition.x < paddlePosition.x:
-        return "left"
-    elif ballPosition.x > paddlePosition.x:
-        return "right"
-    else:
-        return None
+# def bot(ballPosition, paddlePosition) -> str:
+#     if ballPosition.x < paddlePosition.x:
+#         return "left"
+#     elif ballPosition.x > paddlePosition.x:
+#         return "right"
+#     else:
+#         return None
 
 
 
-def playPong(ai = True) -> int:
+def playPong(ai = True, controlFunction = lambda: None, visualize = True) -> int:
     screen = np.zeros((600, 900, 3), np.uint8)
     paddle = Paddle()
     ball = Ball()
@@ -116,8 +125,9 @@ def playPong(ai = True) -> int:
         screen[:,:,:] = 0
         # Update paddle position
         if ai:
-            _ = cv.waitKey(10)
-            direction = bot(ball.position, paddle.position)
+            if visualize:
+                _ = cv.waitKey(10)
+            direction = controlFunction([ball.position.x / 900, ball.position.y / 600, ball.speed, paddle.position.x / 900])
             if direction == "left":
                 paddle.updatePosition(-1)
             elif direction == "right":
@@ -134,20 +144,24 @@ def playPong(ai = True) -> int:
         # Update ball position.
         state = ball.updatePosition(paddle)
 
-        cv.rectangle(screen, (paddle.position - paddle.size).get(), (paddle.position + paddle.size).get(), (0, 0, 255), -1)
-        cv.circle(screen, ball.position.get(), ball.size.x, (255, 255, 255), cv.FILLED)
-        cv.putText(screen, f"Score: {ball.score}", (800, 25), cv.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
-        cv.putText(screen, f"Speed: {ball.speed:.2f}", (800, 50), cv.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
+        if visualize:
+            cv.rectangle(screen, (paddle.position - paddle.size).get(), (paddle.position + paddle.size).get(), (0, 0, 255), -1)
+            cv.circle(screen, ball.position.get(), ball.size.x, (255, 255, 255), cv.FILLED)
+            cv.putText(screen, f"Score: {ball.score}", (800, 25), cv.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
+            cv.putText(screen, f"Speed: {ball.speed:.2f}", (800, 50), cv.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
+            cv.imshow("pong", screen)
+    if visualize:
+        screen[:,:,:] = 0
+        cv.putText(screen, f"End score: {ball.score:.1f}", (300, 250), cv.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255))
         cv.imshow("pong", screen)
-    screen[:,:,:] = 0
-    cv.putText(screen, f"End score: {ball.score:.1f}", (300, 250), cv.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255))
-    cv.imshow("pong", screen)
-    cv.waitKey()
-    cv.destroyAllWindows()
-    
+        cv.waitKey()
+        cv.destroyAllWindows()
+
     return ball.score
 
 
-
 if __name__ == "__main__":
-    _ = playPong()
+    from NeuralNetwork import NeuralNetwork
+    nn = NeuralNetwork()
+    s = playPong(ai=False)
+    print(s)
